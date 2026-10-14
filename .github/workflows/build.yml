@@ -1,0 +1,99 @@
+
+name: Build PegasVPN
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: |
+          cd PegasVPN
+          xcodegen generate
+
+      - name: Resolve Swift packages
+        run: |
+          cd PegasVPN
+          xcodebuild \
+            -resolvePackageDependencies \
+            -project PegasVPN.xcodeproj \
+            -scheme PegasVPN
+
+      - name: Install Go
+        uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version: '1.19'
+
+      - name: Build WireGuard bridge
+        run: |
+          set -e
+          PACKAGE_DIR=$(find "$HOME/Library/Developer/Xcode/DerivedData" \
+            -path "*/SourcePackages/checkouts/wireguard-apple/Sources/WireGuardKitGo" \
+            -type d -print -quit)
+          test -n "$PACKAGE_DIR"
+
+          mkdir -p "$GITHUB_WORKSPACE/wg-build"
+
+          make -C "$PACKAGE_DIR" \
+            ARCHS=arm64 \
+            PLATFORM_NAME=iphoneos \
+            SDKROOT="$(xcrun --sdk iphoneos --show-sdk-path)" \
+            CONFIGURATION_BUILD_DIR="$GITHUB_WORKSPACE/wg-build" \
+            build
+
+          test -f "$GITHUB_WORKSPACE/wg-build/libwg-go.a"
+
+      - name: Build iOS app
+        run: |
+          cd PegasVPN
+          xcodebuild \
+            -project PegasVPN.xcodeproj \
+            -scheme PegasVPN \
+            -sdk iphoneos \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$GITHUB_WORKSPACE/build" \
+            ARCHS=arm64 \
+            LIBRARY_SEARCH_PATHS="$GITHUB_WORKSPACE/wg-build" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package unsigned IPA
+        run: |
+          set -e
+
+          APP="$GITHUB_WORKSPACE/build/Build/Products/Release-iphoneos/PegasVPN.app"
+          test -d "$APP"
+
+          mkdir -p "$GITHUB_WORKSPACE/ipa/Payload"
+          cp -R "$APP" "$GITHUB_WORKSPACE/ipa/Payload/"
+
+          cd "$GITHUB_WORKSPACE/ipa"
+          zip -qry PegasVPN-unsigned.ipa Payload
+
+          test -s PegasVPN-unsigned.ipa
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: PegasVPN-unsigned
+          path: ipa/PegasVPN-unsigned.ipa
+          retention-days: 2

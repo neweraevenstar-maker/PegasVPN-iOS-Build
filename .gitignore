@@ -1,0 +1,13 @@
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+*.conf
+.env
+.env.*
+.DS_Store
+**/build/
+**/ipa/
+**/*.xcodeproj/
+**/*.xcworkspace/

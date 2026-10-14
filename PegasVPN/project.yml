@@ -1,0 +1,88 @@
+name: PegasVPN
+options:
+  developmentLanguage: en
+  bundleIdPrefix: com.pegasvpn
+  deploymentTarget:
+    iOS: '17.0'
+packages:
+  WireGuardKit:
+    url: https://github.com/neweraevenstar-maker/wireguard-apple
+    revision: 597339dd0a6a4613207a5beeff2269cefcab2868
+targets:
+  PegasVPN:
+    type: application
+    platform: iOS
+    sources:
+    - PegasVPN
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pegasvpn.app
+        GENERATE_INFOPLIST_FILE: true
+        SWIFT_VERSION: '5.0'
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: '1'
+        CODE_SIGN_ENTITLEMENTS: PegasVPN/PegasVPN.entitlements
+    entitlements:
+      path: PegasVPN/PegasVPN.entitlements
+    dependencies:
+    - target: PegasVPNTunnel
+    info:
+      properties:
+        CFBundleShortVersionString: 1.0.0
+        CFBundleVersion: '1'
+      path: PegasVPN/Info.plist
+  PegasVPNTunnel:
+    type: app-extension
+    platform: iOS
+    sources:
+    - PegasVPNTunnel
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pegasvpn.app.tunnel
+        GENERATE_INFOPLIST_FILE: true
+        SWIFT_VERSION: '5.0'
+        CODE_SIGN_STYLE: Automatic
+        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+        INFOPLIST_KEY_NSExtension_NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).PacketTunnelProvider
+        MARKETING_VERSION: 1.0.0
+        CURRENT_PROJECT_VERSION: '1'
+        CODE_SIGN_ENTITLEMENTS: PegasVPNTunnel/PegasVPNTunnel/PegasVPNTunnel.entitlements
+    entitlements:
+      path: PegasVPNTunnel/PegasVPNTunnel.entitlements
+    dependencies:
+    - package: WireGuardKit
+    info:
+      properties:
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.networkextension.packet-tunnel
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).PacketTunnelProvider
+        CFBundleShortVersionString: 1.0.0
+        CFBundleVersion: '1'
+      path: PegasVPNTunnel/Info.plist
+  PegasVPNTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+    - PegasVPNTests
+    scheme:
+      testTargets:
+      - PegasVPNTests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pegasvpn.app.tests
+        GENERATE_INFOPLIST_FILE: true
+        SWIFT_VERSION: '5.0'
+    dependencies:
+    - target: PegasVPN
+schemes:
+  PegasVPN:
+    build:
+      targets:
+        PegasVPN: all
+        PegasVPNTests:
+        - test
+    test:
+      gatherCoverageData: true
+      targets:
+      - PegasVPNTests
