@@ -70,6 +70,7 @@ final class VPNAPIClient {
             throw VPNProvisioningError.notConfigured
         }
 
+        let identity = try VPNWireGuardIdentity.loadOrCreate()
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue(
@@ -85,6 +86,10 @@ final class VPNAPIClient {
         request.setValue(
             try VPNDeviceIdentity.identifier(),
             forHTTPHeaderField: "X-PegasVPN-Device-ID"
+        )
+        request.setValue(
+            identity.publicKey,
+            forHTTPHeaderField: "X-PegasVPN-Public-Key"
         )
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
@@ -114,8 +119,18 @@ final class VPNAPIClient {
             from: data
         )
 
-        try VPNProvisioningValidation.validate(configuration: result.configuration)
-
-        return result.configuration
+        // Reject old server-generated keys: a VPN private key must never
+        // have been known by the backend. Only the exact template is valid.
+        let marker = "PrivateKey = __PEGASVPN_LOCAL_KEY__"
+        guard result.configuration.components(separatedBy: marker).count == 2
+        else {
+            throw VPNProvisioningError.invalidResponse
+        }
+        let local = result.configuration.replacingOccurrences(
+            of: marker,
+            with: "PrivateKey = " + identity.privateKey
+        )
+        try VPNProvisioningValidation.validate(configuration: local)
+        return local
     }
 }
