@@ -3,6 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var vpnManager = VPNManager()
     @State private var showSettings = false
+    @AppStorage(VPNDisclosure.acceptedKey) private var disclosureAccepted = false
+    @State private var showDisclosure = false
     @AppStorage("PegasVPN.autoConnect") private var autoConnect = false
     @State private var attemptedAutoConnect = false
     @State private var showConfiguration = false
@@ -146,6 +148,8 @@ struct ContentView: View {
                     Button {
                         if vpnManager.isConnected || vpnManager.isConnecting {
                             vpnManager.disconnect()
+                        } else if !disclosureAccepted {
+                            showDisclosure = true
                         } else {
                             vpnManager.connectAutomatically()
                         }
@@ -348,7 +352,8 @@ struct ContentView: View {
             guard !attemptedAutoConnect else { return }
             attemptedAutoConnect = true
 
-            guard autoConnect,
+            guard disclosureAccepted,
+                  autoConnect,
                   VPNKeychain.load() != nil else { return }
 
             // Дожидаемся загрузки сохранённого NETunnelProviderManager.
@@ -361,6 +366,14 @@ struct ContentView: View {
         .sheet(isPresented: $vpnManager.showSubscription) {
             NavigationStack {
                 VPNSubscriptionView()
+            }
+        }
+        .sheet(isPresented: $showDisclosure) {
+            VPNDisclosureView()
+        }
+        .onAppear {
+            if !disclosureAccepted {
+                showDisclosure = true
             }
         }
         .sheet(isPresented: $showConfiguration) {
