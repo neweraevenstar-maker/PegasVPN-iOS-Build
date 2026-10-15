@@ -2,6 +2,7 @@ import SwiftUI
 import StoreKit
 
 struct VPNSubscriptionView: View {
+    var vpnManager: VPNManager? = nil
     @StateObject private var store = VPNSubscriptionStore.shared
     @AppStorage(VPNDisclosure.acceptedKey) private var disclosureAccepted = false
     @AppStorage("PegasVPN.accountMethod") private var accountMethod = "guest"
@@ -50,15 +51,27 @@ struct VPNSubscriptionView: View {
 
                 if accountMethod == "guest" {
                     Label(
-                        "Before subscribing, sign in with Apple or email "
-                        + "in Settings > Account. This helps you recover "
-                        + "your purchase if you reinstall the app or "
-                        + "delete your account.",
+                        "Sign in with Apple or email before subscribing. "
+                        + "A verified account helps you restore purchases "
+                        + "and protects your subscription across devices.",
                         systemImage: "person.crop.circle.badge.checkmark"
                     )
                     .font(.footnote)
                     .foregroundStyle(.orange)
                     .multilineTextAlignment(.leading)
+
+                    if let vpnManager {
+                        NavigationLink {
+                            VPNAccountView(vpnManager: vpnManager)
+                        } label: {
+                            Label(
+                                "Sign in to subscribe",
+                                systemImage: "person.crop.circle"
+                            )
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
                 }
 
                 ForEach(store.products, id: \.id) { product in
@@ -130,7 +143,7 @@ struct VPNSubscriptionView: View {
                 Button("Restore Purchases") {
                     Task { await store.restorePurchases() }
                 }
-                .disabled(store.isLoading)
+                .disabled(store.isLoading || accountMethod == "guest")
 
                 Link(
                     "Manage or cancel Apple subscriptions",
