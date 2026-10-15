@@ -289,7 +289,8 @@ struct ContentView: View {
                         }
                     }
                 }
-                .navigationTitle(t("Language"))\n                .pegasPremiumScreen()
+                .navigationTitle(t("Language"))
+                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Done")) {
@@ -329,7 +330,8 @@ struct ContentView: View {
                         .disabled(!VPNServerCatalog.isAvailable(name))
                     }
                 }
-                .navigationTitle(t("VPN Locations"))\n                .pegasPremiumScreen()
+                .navigationTitle(t("VPN Locations"))
+                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Done")) { showLocations = false }
@@ -412,7 +414,8 @@ struct ContentView: View {
                     Spacer()
                 }
                 .padding()
-                .navigationTitle(t("VPN Configuration"))\n                .pegasPremiumScreen()
+                .navigationTitle(t("VPN Configuration"))
+                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Cancel")) {
