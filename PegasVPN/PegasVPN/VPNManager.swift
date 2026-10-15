@@ -16,6 +16,7 @@ final class VPNManager: ObservableObject {
     private var connectionTask: Task<Void, Never>?
     private var connectionRevision: UInt64 = 0
     private var isRevalidatingAccess = false
+    private var legacyMigrationInProgress = false
 
     init() {
         NotificationCenter.default.addObserver(
@@ -28,10 +29,26 @@ final class VPNManager: ObservableObject {
             }
         }
 
-        wireGuardConfiguration = VPNKeychain.load()
-
-        Task {
-            await loadConfiguration()
+        let saved = VPNKeychain.load()
+        let oldServerGeneratedKey = saved?.contains(
+            "Endpoint = 2.31.30.143:51820"
+        ) == true && saved?.contains(
+            "# PegasVPN-Client-Key-V2"
+        ) != true
+        if oldServerGeneratedKey {
+            // Never continue using a private key previously issued by
+            // the backend. Next provision rotates that device's peer.
+            legacyMigrationInProgress = true
+            wireGuardConfiguration = nil
+            Task {
+                await resetAfterAccountChange()
+                legacyMigrationInProgress = false
+            }
+        } else {
+            wireGuardConfiguration = saved
+            Task {
+                await loadConfiguration()
+            }
         }
     }
 
@@ -118,6 +135,10 @@ final class VPNManager: ObservableObject {
     }
 
     func connectAutomatically() {
+        guard !legacyMigrationInProgress else {
+            errorMessage = "Updating VPN credentials. Please try again."
+            return
+        }
         guard VPNDisclosure.isAccepted else {
             errorMessage = "Review VPN data disclosure before connecting."
             return
