@@ -100,6 +100,12 @@ struct VPNSettingsView: View {
 
                 Section(t("Account & subscription")) {
                     NavigationLink {
+                        VPNAccountView(vpnManager: vpnManager)
+                    } label: {
+                        Label("Account", systemImage: "person.crop.circle")
+                    }
+
+                    NavigationLink {
                         VPNSubscriptionView()
                     } label: {
                         Label(
