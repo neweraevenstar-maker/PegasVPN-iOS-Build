@@ -115,6 +115,10 @@ final class VPNManager: ObservableObject {
     }
 
     func connectAutomatically() {
+        guard VPNDisclosure.isAccepted else {
+            errorMessage = "Review VPN data disclosure before connecting."
+            return
+        }
         guard !isConnected && !isConnecting else { return }
         isConnecting = true
         errorMessage = nil
@@ -181,6 +185,10 @@ final class VPNManager: ObservableObject {
     }
 
     func connect() {
+        guard VPNDisclosure.isAccepted else {
+            errorMessage = "Review VPN data disclosure before connecting."
+            return
+        }
         recordConnectionAttempt()
 
         guard !isConnecting && !isConnected else { return }
