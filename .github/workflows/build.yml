@@ -3,6 +3,7 @@ name: Build PegasVPN
 
 on:
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
