@@ -34,10 +34,10 @@ struct ContentView: View {
 
     @State private var selectedLocation = "Current configuration"
 
-    private let background = Color(red: 0.025, green: 0.045, blue: 0.10)
-    private let panel = Color(red: 0.055, green: 0.095, blue: 0.18)
-    private let accent = Color(red: 0.20, green: 0.48, blue: 0.92)
-    private let silver = Color(red: 0.84, green: 0.90, blue: 0.98)
+    private let background = PegasDesign.midnight
+    private let panel = PegasDesign.surface
+    private let accent = PegasDesign.electric
+    private let silver = PegasDesign.ice
 
     private var locations: [(String, String)] {
         VPNServerCatalog.locations.map { location in
@@ -63,7 +63,7 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            background.ignoresSafeArea()
+            PegasDesign.background.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 HStack {
@@ -144,7 +144,7 @@ struct ContentView: View {
                                     lineWidth: 2
                                 )
                         }
-                        .shadow(color: accent.opacity(0.22), radius: 30)
+                       .shadow(color: accent.opacity(0.22), radius: 30)
 
                     Button {
                         if vpnManager.isConnected || vpnManager.isConnecting {
@@ -236,7 +236,7 @@ struct ContentView: View {
                                 .foregroundStyle(silver.opacity(0.6))
                         }
                         .padding(18)
-                        .background(panel, in: RoundedRectangle(cornerRadius: 18))
+                       .background(panel, in: RoundedRectangle(cornerRadius: 22))
                     }
                     .buttonStyle(.plain)
 
@@ -289,7 +289,7 @@ struct ContentView: View {
                         }
                     }
                 }
-                .navigationTitle(t("Language"))
+                .navigationTitle(t("Language"))\n                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Done")) {
@@ -329,7 +329,7 @@ struct ContentView: View {
                         .disabled(!VPNServerCatalog.isAvailable(name))
                     }
                 }
-                .navigationTitle(t("VPN Locations"))
+                .navigationTitle(t("VPN Locations"))\n                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Done")) { showLocations = false }
@@ -412,7 +412,7 @@ struct ContentView: View {
                     Spacer()
                 }
                 .padding()
-                .navigationTitle(t("VPN Configuration"))
+                .navigationTitle(t("VPN Configuration"))\n                .pegasPremiumScreen()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button(t("Cancel")) {
