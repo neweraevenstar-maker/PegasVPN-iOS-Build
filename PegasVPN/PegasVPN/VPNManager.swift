@@ -125,7 +125,7 @@ final class VPNManager: ObservableObject {
                 try Task.checkCancellation()
 
                 guard access.has_access else {
-                    errorMessage = "Free trial expired. Choose a subscription."
+                    errorMessage = "No active VPN access. Choose a subscription."
                     isConnecting = false
                     showSubscription = true
                     return

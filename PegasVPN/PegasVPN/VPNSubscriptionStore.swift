@@ -39,12 +39,12 @@ final class VPNSubscriptionStore: ObservableObject {
     func loadProducts() async {
         isLoading = true
         defer { isLoading = false }
+        errorMessage = nil
 
         do {
             products = try await Product.products(for: productIDs)
                 .sorted { $0.price < $1.price }
             await refreshStatus()
-            errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }

@@ -16,7 +16,6 @@ struct VPNSettingsView: View {
 
     @State private var showControlCenter = false
 
-    @State private var showPlans = false
     @State private var showDiagnostics = false
 
     private var activeLanguage: String {
@@ -99,20 +98,6 @@ struct VPNSettingsView: View {
                     }
                 }
 
-                Section(t("Russia whitelist mode")) {
-                    HStack {
-                        Label(
-                            t("Russia whitelist mode"),
-                            systemImage: "globe"
-                        )
-                        Spacer()
-                        Text(t("Coming soon"))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-
-
                 Section(t("Account & subscription")) {
                     NavigationLink {
                         VPNSubscriptionView()
@@ -123,8 +108,8 @@ struct VPNSettingsView: View {
                         )
                     }
 
-                    Button {
-                        showPlans = true
+                    NavigationLink {
+                        VPNSubscriptionView()
                     } label: {
                         Label(t("Plans"), systemImage: "crown")
                     }
@@ -179,9 +164,6 @@ struct VPNSettingsView: View {
                 isConnecting: isConnecting,
                 errorMessage: errorMessage
             )
-        }
-        .sheet(isPresented: $showPlans) {
-            VPNPlansView()
         }
         .sheet(isPresented: $showDiagnostics) {
             VPNDiagnosticsView(

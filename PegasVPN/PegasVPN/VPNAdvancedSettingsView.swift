@@ -24,22 +24,6 @@ struct VPNAdvancedSettingsView: View {
                     )
                 }
 
-                Section("Russia whitelist") {
-                    Label(
-                        "In development",
-                        systemImage: "clock"
-                    )
-                    .foregroundStyle(.secondary)
-
-                    Text(
-                        "Whitelist routing will be enabled "
-                        + "after server-side routing support "
-                        + "has been implemented and tested."
-                    )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
-
                 Section("Settings backup") {
                     ShareLink(
                         item: VPNPreferencesExport.generate()
