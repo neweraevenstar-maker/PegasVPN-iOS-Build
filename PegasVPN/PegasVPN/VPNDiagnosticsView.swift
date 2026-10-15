@@ -86,6 +86,7 @@ struct VPNDiagnosticsView: View {
                 }
             }
             .navigationTitle(localized("Diagnostics"))
+            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
