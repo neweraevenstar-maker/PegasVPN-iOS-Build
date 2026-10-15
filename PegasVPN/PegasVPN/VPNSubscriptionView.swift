@@ -3,6 +3,8 @@ import StoreKit
 
 struct VPNSubscriptionView: View {
     @StateObject private var store = VPNSubscriptionStore.shared
+    @AppStorage(VPNDisclosure.acceptedKey) private var disclosureAccepted = false
+    @State private var showDisclosure = false
 
     var body: some View {
         ScrollView {
@@ -47,7 +49,11 @@ struct VPNSubscriptionView: View {
 
                 ForEach(store.products, id: \.id) { product in
                     Button {
-                        Task { await store.purchase(product) }
+                        if disclosureAccepted {
+                            Task { await store.purchase(product) }
+                        } else {
+                            showDisclosure = true
+                        }
                     } label: {
                         VStack(alignment: .leading, spacing: 8) {
                             HStack {
@@ -115,6 +121,9 @@ struct VPNSubscriptionView: View {
             .padding(24)
         }
         .navigationTitle("Subscription")
+        .sheet(isPresented: $showDisclosure) {
+            VPNDisclosureView()
+        }
         .task {
             await store.loadProducts()
             await store.loadAccessStatus()
