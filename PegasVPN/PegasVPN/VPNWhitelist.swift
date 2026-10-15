@@ -5,6 +5,7 @@ struct VPNWhitelist: Codable, Equatable {
     var excludedIPv4: [String] = []
 
     static let storageKey = "pegasvpn.whitelist.v1"
+    static let maxExcludedNetworks = 32
 
     static func load() -> VPNWhitelist {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
@@ -41,6 +42,8 @@ struct VPNWhitelist: Codable, Equatable {
     mutating func add(_ cidr: String) -> Bool {
         let value = cidr.trimmingCharacters(in: .whitespacesAndNewlines)
         guard Self.validCIDR(value),
+              value != "0.0.0.0/0",
+              excludedIPv4.count < Self.maxExcludedNetworks,
               !excludedIPv4.contains(value)
         else { return false }
 
