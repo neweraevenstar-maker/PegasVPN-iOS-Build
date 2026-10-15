@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var vpnManager = VPNManager()
+    @Environment(\.scenePhase) private var scenePhase
     @State private var showSettings = false
     @AppStorage(VPNDisclosure.acceptedKey) private var disclosureAccepted = false
     @State private var showDisclosure = false
@@ -361,6 +362,17 @@ struct ContentView: View {
 
             if !vpnManager.isConnected && !vpnManager.isConnecting {
                 vpnManager.connectAutomatically()
+            }
+        }
+        .task(id: scenePhase) {
+            guard scenePhase == .active else { return }
+            while !Task.isCancelled {
+                await vpnManager.revalidateAccess()
+                do {
+                    try await Task.sleep(for: .seconds(300))
+                } catch {
+                    break
+                }
             }
         }
         .sheet(isPresented: $vpnManager.showSubscription) {
