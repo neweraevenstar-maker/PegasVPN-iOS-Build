@@ -44,7 +44,9 @@ struct VPNDisclosureView: View {
                         "Account and connection",
                         "The app contacts our service to authenticate "
                         + "your session, check VPN access and request "
-                        + "a WireGuard connection configuration."
+                        + "a WireGuard connection configuration. "
+                        + "A randomly generated installation identifier "
+                        + "allows each device to receive its own VPN key."
                     )
 
                     disclosure(
