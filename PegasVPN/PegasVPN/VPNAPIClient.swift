@@ -66,12 +66,7 @@ final class VPNAPIClient {
         endpoint: URL,
         accessToken: String
     ) async throws -> String {
-        guard endpoint.scheme?.lowercased() == "https",
-              endpoint.host != nil,
-              endpoint.user == nil,
-              endpoint.password == nil,
-              endpoint.fragment == nil
-        else {
+        guard VPNProvisioningEndpointPolicy.isTrusted(endpoint) else {
             throw VPNProvisioningError.notConfigured
         }
 
