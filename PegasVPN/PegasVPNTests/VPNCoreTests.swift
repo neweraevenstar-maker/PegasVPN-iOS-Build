@@ -140,6 +140,35 @@ final class VPNCoreTests: XCTestCase {
         )
     }
 
+    func testProvisioningAPIRejectsUntrustedOrigins() throws {
+        let good = try XCTUnwrap(
+            URL(string: "https://api.vimvitae.net/vpn/provision")
+        )
+        XCTAssertTrue(VPNProvisioningEndpointPolicy.isTrusted(good))
+
+        for raw in [
+            "https://evil.example/vpn/provision",
+            "http://api.vimvitae.net/vpn/provision",
+            "https://api.vimvitae.net.evil.example/vpn/provision",
+            "https://api.vimvitae.net:8443/vpn/provision",
+            "https://api.vimvitae.net/vpn/provision?token=abc",
+            "https://api.vimvitae.net/other",
+        ] {
+            let url = try XCTUnwrap(URL(string: raw))
+            XCTAssertFalse(VPNProvisioningEndpointPolicy.isTrusted(url))
+        }
+    }
+
+    func testRemoteCatalogRejectsUntrustedProvisioningEndpoint() {
+        let invalid = VPNRemoteServer(
+            id: "fake", name: "Fake", countryCode: "NL",
+            endpoint: "https://evil.example/vpn/provision",
+            isAvailable: true
+        )
+        XCTAssertNil(invalid.endpointURL)
+        XCTAssertTrue(VPNRemoteServerValidator.validated([invalid]).isEmpty)
+    }
+
     func testIPv4ExclusionsRejectDefaultRouteAndDuplicates() {
         var exclusions = VPNWhitelist()
         XCTAssertFalse(exclusions.add("0.0.0.0/0"))
