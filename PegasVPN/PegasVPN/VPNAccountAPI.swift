@@ -174,5 +174,6 @@ enum VPNAccountAPI {
         UserDefaults.standard.removeObject(forKey: methodKey)
         UserDefaults.standard.set(false, forKey: "PegasVPN.autoConnect")
         _ = VPNConfigurationStore.delete()
+        _ = VPNWireGuardIdentity.delete()
     }
 }
