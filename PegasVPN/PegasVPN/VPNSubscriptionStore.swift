@@ -52,6 +52,10 @@ final class VPNSubscriptionStore: ObservableObject {
     }
 
     func purchase(_ product: Product) async {
+        guard VPNAccountAPI.method != "guest" else {
+            errorMessage = "Sign in with Apple or email in Settings > Account before subscribing."
+            return
+        }
         guard VPNDisclosure.isAccepted else {
             errorMessage = "Review VPN data disclosure before subscribing."
             return
