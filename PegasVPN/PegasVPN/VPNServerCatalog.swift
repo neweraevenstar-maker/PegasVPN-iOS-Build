@@ -15,8 +15,8 @@ enum VPNServerCatalog {
     static let locations: [VPNServerLocation] = [
         .init(
             id: "current",
-            name: "Current configuration",
-            countryCode: "ZZ",
+            name: "Germany",
+            countryCode: "DE",
             isAvailable: true
         ),
         .init(
