@@ -158,7 +158,7 @@ struct VPNSettingsView: View {
                     }
                 }
             }
-            .navigationTitle(t("Settings"))
+            .navigationTitle(t("Settings"))\n            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(t("Done")) { dismiss() }
