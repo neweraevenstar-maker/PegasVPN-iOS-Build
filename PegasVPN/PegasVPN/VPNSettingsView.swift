@@ -44,7 +44,7 @@ struct VPNSettingsView: View {
 
             Section {
                 NavigationLink(destination: VPNWhitelistView()) {
-                    Label("Белые списки", systemImage: "list.bullet.shield")
+                    Label("Исключения IPv4", systemImage: "list.bullet.shield")
                 }
             } header: {
                 Text("Маршрутизация")
@@ -127,8 +127,8 @@ struct VPNSettingsView: View {
                     Toggle("Kill Switch", isOn: $killSwitch)
 
                     Text(
-                        "Applies when a VPN connection is configured "
-                        + "or reconnected. iOS controls enforcement."
+                        "Applies on the next VPN connection. "
+                        + "Turn off Kill Switch before using IPv4 exclusions."
                     )
                     .font(.caption)
                     .foregroundStyle(.secondary)
