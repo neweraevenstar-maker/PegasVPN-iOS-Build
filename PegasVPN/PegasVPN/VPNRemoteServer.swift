@@ -9,13 +9,7 @@ struct VPNRemoteServer: Codable, Identifiable, Equatable {
 
     var endpointURL: URL? {
         guard let url = URL(string: endpoint),
-              url.scheme?.lowercased() == "https",
-              url.host != nil,
-              url.user == nil,
-              url.password == nil,
-              url.fragment == nil,
-              url.query == nil,
-              url.port == nil || url.port == 443
+              VPNProvisioningEndpointPolicy.isTrusted(url)
         else {
             return nil
         }
