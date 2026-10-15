@@ -67,6 +67,7 @@ struct ContentView: View {
 
             VStack(spacing: 0) {
                 HStack {
+                    PegasCrest()
                     VStack(alignment: .leading, spacing: 5) {
                         Text("PEGAS")
                             .font(.system(size: 30, weight: .bold, design: .rounded))
@@ -108,69 +109,19 @@ struct ContentView: View {
 
                 Spacer()
 
-                ZStack {
-                    Circle()
-                        .stroke(accent.opacity(0.09), lineWidth: 1)
-                        .frame(width: 290, height: 290)
-
-                    Circle()
-                        .stroke(accent.opacity(0.18), lineWidth: 1)
-                        .frame(width: 252, height: 252)
-
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [
-                                    vpnManager.isConnected
-                                        ? Color(red: 0.08, green: 0.42, blue: 0.55)
-                                        : accent.opacity(0.45),
-                                    panel,
-                                    background
-                                ],
-                                center: .topLeading,
-                                startRadius: 10,
-                                endRadius: 220
-                            )
-                        )
-                        .frame(width: 215, height: 215)
-                        .overlay {
-                            Circle()
-                                .stroke(
-                                    LinearGradient(
-                                        colors: [silver.opacity(0.75), accent, accent.opacity(0.2)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    ),
-                                    lineWidth: 2
-                                )
-                        }
-                       .shadow(color: accent.opacity(0.22), radius: 30)
-
-                    Button {
-                        if vpnManager.isConnected || vpnManager.isConnecting {
-                            vpnManager.disconnect()
-                        } else if !disclosureAccepted {
-                            showDisclosure = true
-                        } else {
-                            vpnManager.connectAutomatically()
-                        }
-                    } label: {
-                        VStack(spacing: 15) {
-                            Image(systemName: "power")
-                                .font(.system(size: 58, weight: .light))
-
-                            Text(
-                                vpnManager.isConnected ? t("STOP") :
-                                vpnManager.isConnecting ? t("CANCEL") : t("START")
-                            )
-                            .font(.system(size: 18, weight: .semibold))
-                            .tracking(4)
-                        }
-                        .foregroundStyle(silver)
-                        .frame(width: 205, height: 205)
-                        .contentShape(Circle())
+                PegasOrbitalControl(
+                    connected: vpnManager.isConnected,
+                    connecting: vpnManager.isConnecting,
+                    title: vpnManager.isConnected ? t("STOP") :
+                        vpnManager.isConnecting ? t("CANCEL") : t("START")
+                ) {
+                    if vpnManager.isConnected || vpnManager.isConnecting {
+                        vpnManager.disconnect()
+                    } else if !disclosureAccepted {
+                        showDisclosure = true
+                    } else {
+                        vpnManager.connectAutomatically()
                     }
-                    .buttonStyle(.plain)
                 }
 
                 HStack(spacing: 9) {
