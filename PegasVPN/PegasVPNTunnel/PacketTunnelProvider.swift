@@ -381,7 +381,7 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
         interface.dns = dnsServers
 
         return TunnelConfiguration(
-            name: "OneTap VPN",
+            name: "PegasVPN",
             interface: interface,
             peers: peers
         )
