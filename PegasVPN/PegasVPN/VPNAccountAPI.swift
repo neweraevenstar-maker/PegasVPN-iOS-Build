@@ -117,9 +117,19 @@ enum VPNAccountAPI {
         let body = try JSONEncoder().encode([
             "email": email, "code": code
         ])
-        let data = try await send(
-            "/auth/email/verify", method: "POST", body: body, token: guest
-        )
+        let data: Data
+        do {
+            data = try await send(
+                "/auth/email/verify", method: "POST", body: body, token: guest
+            )
+        } catch VPNAccountError.server(409) {
+            // An existing email identity belongs to another account.
+            // The verified email code authenticates that identity directly;
+            // never merge or overwrite the current guest account.
+            data = try await send(
+                "/auth/email/verify", method: "POST", body: body
+            )
+        }
         try install(data, method: "email")
     }
 
