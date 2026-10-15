@@ -131,6 +131,6 @@ final class VPNAPIClient {
             with: "PrivateKey = " + identity.privateKey
         )
         try VPNProvisioningValidation.validate(configuration: local)
-        return local
+        return "# PegasVPN-Client-Key-V2\\n" + local
     }
 }
