@@ -184,7 +184,7 @@ final class VPNManager: ObservableObject {
         }
     }
 
-    func connect() {
+    private func connect() {
         guard VPNDisclosure.isAccepted else {
             errorMessage = "Review VPN data disclosure before connecting."
             return
@@ -247,11 +247,34 @@ final class VPNManager: ObservableObject {
         }
     }
 
-    func resetAfterAccountDeletion() {
-        disconnect()
+    /// Never reuse a previous account's tunnel or WireGuard private key.
+    func resetAfterAccountChange() async {
+        activationTask?.cancel()
+        activationTask = nil
+        manager.isOnDemandEnabled = false
+        manager.connection.stopVPNTunnel()
+
+        do {
+            try await manager.removeFromPreferences()
+            manager = NETunnelProviderManager()
+        } catch {
+            // Keep the existing profile disabled if removal fails.
+            do {
+                try await manager.saveToPreferences()
+            } catch {
+                errorMessage = "Could not remove the previous VPN profile."
+            }
+        }
+
         wireGuardConfiguration = nil
-        _ = VPNConfigurationStore.delete()
-        errorMessage = nil
+        if !VPNConfigurationStore.delete() {
+            errorMessage = "Could not clear the previous VPN configuration."
+        }
+        updateConnectionStatus()
+    }
+
+    func resetAfterAccountDeletion() async {
+        await resetAfterAccountChange()
     }
 
     func prepareForAutoConnect() async {
