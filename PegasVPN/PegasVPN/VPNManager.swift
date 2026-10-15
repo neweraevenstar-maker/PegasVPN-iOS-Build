@@ -123,6 +123,11 @@ final class VPNManager: ObservableObject {
             return
         }
         guard !isConnected && !isConnecting else { return }
+        guard !(VPNKillSwitch.isEnabled
+                && !VPNWhitelist.load().excludedIPv4.isEmpty) else {
+            errorMessage = "Turn off Kill Switch to use IPv4 network exclusions."
+            return
+        }
         isConnecting = true
         errorMessage = nil
 
@@ -190,6 +195,11 @@ final class VPNManager: ObservableObject {
     private func connect() {
         guard VPNDisclosure.isAccepted else {
             errorMessage = "Review VPN data disclosure before connecting."
+            return
+        }
+        guard !(VPNKillSwitch.isEnabled
+                && !VPNWhitelist.load().excludedIPv4.isEmpty) else {
+            errorMessage = "Turn off Kill Switch to use IPv4 network exclusions."
             return
         }
         recordConnectionAttempt()
