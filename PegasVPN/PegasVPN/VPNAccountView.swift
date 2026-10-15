@@ -151,7 +151,7 @@ struct VPNAccountView: View {
                 }
             }
         }
-        .navigationTitle("Account")
+        .navigationTitle("Account")\n        .pegasPremiumScreen()
         .confirmationDialog(
             "Permanently delete your PegasVPN account?",
             isPresented: $confirmDeletion,
