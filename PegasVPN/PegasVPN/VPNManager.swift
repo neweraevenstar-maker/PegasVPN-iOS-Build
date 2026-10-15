@@ -254,22 +254,24 @@ final class VPNManager: ObservableObject {
         manager.isOnDemandEnabled = false
         manager.connection.stopVPNTunnel()
 
-        do {
-            try await manager.removeFromPreferences()
-            manager = NETunnelProviderManager()
-        } catch {
-            // If iOS cannot remove the profile, scrub the old
-            // WireGuard configuration and disable on-demand access.
-            let emptyProtocol = NETunnelProviderProtocol()
-            emptyProtocol.providerBundleIdentifier = providerBundleID
-            emptyProtocol.serverAddress = "PegasVPN"
-            emptyProtocol.providerConfiguration = [:]
-            manager.protocolConfiguration = emptyProtocol
-            manager.isEnabled = false
+        if manager.protocolConfiguration != nil {
             do {
-                try await manager.saveToPreferences()
+                try await manager.removeFromPreferences()
+                manager = NETunnelProviderManager()
             } catch {
-                errorMessage = "Remove the old VPN profile in iOS Settings."
+                // If iOS cannot remove the profile, scrub the old
+                // WireGuard key and disable on-demand access.
+                let emptyProtocol = NETunnelProviderProtocol()
+                emptyProtocol.providerBundleIdentifier = providerBundleID
+                emptyProtocol.serverAddress = "PegasVPN"
+                emptyProtocol.providerConfiguration = [:]
+                manager.protocolConfiguration = emptyProtocol
+                manager.isEnabled = false
+                do {
+                    try await manager.saveToPreferences()
+                } catch {
+                    errorMessage = "Remove the old VPN profile in iOS Settings."
+                }
             }
         }
 
