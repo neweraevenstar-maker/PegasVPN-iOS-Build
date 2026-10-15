@@ -258,11 +258,18 @@ final class VPNManager: ObservableObject {
             try await manager.removeFromPreferences()
             manager = NETunnelProviderManager()
         } catch {
-            // Keep the existing profile disabled if removal fails.
+            // If iOS cannot remove the profile, scrub the old
+            // WireGuard configuration and disable on-demand access.
+            let emptyProtocol = NETunnelProviderProtocol()
+            emptyProtocol.providerBundleIdentifier = providerBundleID
+            emptyProtocol.serverAddress = "PegasVPN"
+            emptyProtocol.providerConfiguration = [:]
+            manager.protocolConfiguration = emptyProtocol
+            manager.isEnabled = false
             do {
                 try await manager.saveToPreferences()
             } catch {
-                errorMessage = "Could not remove the previous VPN profile."
+                errorMessage = "Remove the old VPN profile in iOS Settings."
             }
         }
 
