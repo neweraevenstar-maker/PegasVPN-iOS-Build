@@ -13,6 +13,7 @@ final class VPNManager: ObservableObject {
     private var manager = NETunnelProviderManager()
     private var wireGuardConfiguration: String?
     private var activationTask: Task<Void, Never>?
+    private var isRevalidatingAccess = false
 
     init() {
         NotificationCenter.default.addObserver(
@@ -284,6 +285,28 @@ final class VPNManager: ObservableObject {
 
     func resetAfterAccountDeletion() async {
         await resetAfterAccountChange()
+    }
+
+    /// Check server entitlement while the app is in the foreground.
+    /// An unavailable API is not proof of expiry: leave the tunnel
+    /// intact, and let the server-side peer reaper enforce revocations.
+    func revalidateAccess() async {
+        guard isConnected && !isRevalidatingAccess else { return }
+        isRevalidatingAccess = true
+        defer { isRevalidatingAccess = false }
+
+        do {
+            let access = try await VPNBillingClient.accessStatus()
+            guard !Task.isCancelled, isConnected else { return }
+            if !access.has_access {
+                disconnect()
+                errorMessage = "VPN access has expired. Renew your subscription."
+                showSubscription = true
+                VPNEventLog.shared.record("VPN access expired")
+            }
+        } catch {
+            VPNEventLog.shared.record("Access revalidation unavailable")
+        }
     }
 
     func prepareForAutoConnect() async {
