@@ -11,7 +11,16 @@ struct VPNWhitelist: Codable, Equatable {
         guard let data = UserDefaults.standard.data(forKey: storageKey),
               let value = try? JSONDecoder().decode(VPNWhitelist.self, from: data)
         else { return VPNWhitelist() }
-        return value
+
+        var seen = Set<String>()
+        let sanitized = value.excludedIPv4.filter { cidr in
+            validCIDR(cidr)
+                && cidr != "0.0.0.0/0"
+                && seen.insert(cidr).inserted
+        }
+        return VPNWhitelist(
+            excludedIPv4: Array(sanitized.prefix(maxExcludedNetworks))
+        )
     }
 
     func save() {
