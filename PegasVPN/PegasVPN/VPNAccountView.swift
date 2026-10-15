@@ -57,6 +57,7 @@ struct VPNAccountView: View {
                                             identityToken: token,
                                             nonce: submittedNonce
                                         )
+                                        await completeSignIn()
                                     }
                                 }
                             case .failure(let error):
@@ -87,6 +88,7 @@ struct VPNAccountView: View {
                                     try await VPNAccountAPI.signInEmail(
                                         email: email, code: code
                                     )
+                                    await completeSignIn()
                                 }
                             }
                         }
@@ -149,7 +151,7 @@ struct VPNAccountView: View {
                 Task {
                     await perform {
                         try await VPNAccountAPI.deleteAccount()
-                        vpnManager.resetAfterAccountDeletion()
+                        await vpnManager.resetAfterAccountDeletion()
                         deleted = true
                     }
                 }
@@ -160,6 +162,15 @@ struct VPNAccountView: View {
                 + "Deleting does not cancel an Apple subscription."
             )
         }
+    }
+
+    @MainActor
+    private func completeSignIn() async {
+        await vpnManager.resetAfterAccountChange()
+        // Reconcile StoreKit entitlements silently for the signed-in
+        // account; AppStore.sync() is reserved for explicit Restore.
+        await VPNSubscriptionStore.shared.refreshStatus()
+        await VPNSubscriptionStore.shared.loadAccessStatus()
     }
 
     @MainActor
