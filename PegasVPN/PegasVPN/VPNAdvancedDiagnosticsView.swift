@@ -91,6 +91,7 @@ struct VPNAdvancedDiagnosticsView: View {
                 }
             }
             .navigationTitle("Advanced diagnostics")
+            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
