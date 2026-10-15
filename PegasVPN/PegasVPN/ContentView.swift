@@ -75,10 +75,6 @@ struct ContentView: View {
                             .tracking(1)
                             .foregroundStyle(accent)
 
-                        Text(t("PRIVATE. SECURE. FREE."))
-                            .font(.system(size: 10, weight: .medium))
-                            .tracking(2.2)
-                            .foregroundStyle(silver.opacity(0.48))
                     }
 
                     Spacer()
