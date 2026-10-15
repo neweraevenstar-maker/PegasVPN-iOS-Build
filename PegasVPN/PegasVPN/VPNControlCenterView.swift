@@ -72,6 +72,7 @@ struct VPNControlCenterView: View {
                 }
             }
             .navigationTitle("Control center")
+            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
