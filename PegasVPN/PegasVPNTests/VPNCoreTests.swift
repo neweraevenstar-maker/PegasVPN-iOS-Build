@@ -139,4 +139,19 @@ final class VPNCoreTests: XCTestCase {
             futureServers.allSatisfy { !$0.isAvailable }
         )
     }
+
+    func testCurrentLocationIsGermany() {
+        let active = VPNServerCatalog.locations.filter(\.isAvailable)
+        XCTAssertEqual(active.count, 1)
+        XCTAssertEqual(active.first?.name, "Germany")
+        XCTAssertEqual(active.first?.countryCode, "DE")
+    }
+
+    func testPlannedNetherlandsCannotBeSelected() {
+        XCTAssertFalse(VPNServerCatalog.isAvailable("Netherlands"))
+        XCTAssertFalse(VPNServerCatalog.isAvailable("Sweden"))
+        XCTAssertFalse(VPNServerCatalog.isAvailable("Lithuania"))
+        XCTAssertFalse(VPNServerCatalog.isAvailable("Switzerland"))
+        XCTAssertFalse(VPNServerCatalog.isAvailable("Russia"))
+    }
 }
