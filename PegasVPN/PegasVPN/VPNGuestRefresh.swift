@@ -169,4 +169,9 @@ enum VPNGuestRefresh {
         try save(reply.refresh_token)
         return reply.access_token
     }
+
+    static func clear() {
+        SecItemDelete(query as CFDictionary)
+    }
+
 }
