@@ -41,6 +41,7 @@ final class VPNManager: ObservableObject {
             legacyMigrationInProgress = true
             wireGuardConfiguration = nil
             Task {
+                await loadConfiguration()
                 await resetAfterAccountChange()
                 legacyMigrationInProgress = false
             }
