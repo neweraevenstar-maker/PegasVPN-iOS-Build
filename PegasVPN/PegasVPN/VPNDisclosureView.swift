@@ -84,6 +84,7 @@ struct VPNDisclosureView: View {
                 .padding(24)
             }
             .navigationTitle("Privacy and VPN")
+            .pegasPremiumScreen()
             .navigationBarTitleDisplayMode(.inline)
         }
     }
