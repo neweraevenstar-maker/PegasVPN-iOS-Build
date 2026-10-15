@@ -85,6 +85,12 @@ final class VPNAPIClient {
             "application/json",
             forHTTPHeaderField: "Accept"
         )
+        // Stable only for this installation; never reuse a WireGuard
+        // private key between different devices on the same account.
+        request.setValue(
+            try VPNDeviceIdentity.identifier(),
+            forHTTPHeaderField: "X-PegasVPN-Device-ID"
+        )
         request.cachePolicy = .reloadIgnoringLocalCacheData
 
         let (data, response) = try await session.data(for: request)
