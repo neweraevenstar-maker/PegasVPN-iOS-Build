@@ -140,6 +140,27 @@ final class VPNCoreTests: XCTestCase {
         )
     }
 
+    func testIPv4ExclusionsRejectDefaultRouteAndDuplicates() {
+        var exclusions = VPNWhitelist()
+        XCTAssertFalse(exclusions.add("0.0.0.0/0"))
+        XCTAssertTrue(exclusions.add("192.168.0.0/16"))
+        XCTAssertFalse(exclusions.add("192.168.0.0/16"))
+        XCTAssertFalse(exclusions.add("300.1.1.0/24"))
+        XCTAssertEqual(exclusions.excludedIPv4.count, 1)
+    }
+
+    func testIPv4ExclusionsLimitRouteCount() {
+        var exclusions = VPNWhitelist()
+        for number in 0..<VPNWhitelist.maxExcludedNetworks {
+            XCTAssertTrue(exclusions.add("10.0.\(number).0/24"))
+        }
+        XCTAssertFalse(exclusions.add("10.1.1.0/24"))
+        XCTAssertEqual(
+            exclusions.excludedIPv4.count,
+            VPNWhitelist.maxExcludedNetworks
+        )
+    }
+
     func testCurrentLocationIsGermany() {
         let active = VPNServerCatalog.locations.filter(\.isAvailable)
         XCTAssertEqual(active.count, 1)
