@@ -157,7 +157,8 @@ struct VPNSubscriptionView: View {
             }
             .padding(24)
         }
-        .navigationTitle("Subscription")\n        .pegasPremiumScreen()
+        .navigationTitle("Subscription")
+        .pegasPremiumScreen()
         .sheet(isPresented: $showDisclosure) {
             VPNDisclosureView()
         }
