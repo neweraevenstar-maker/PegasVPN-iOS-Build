@@ -70,7 +70,7 @@ struct VPNSettingsView: View {
                         .foregroundStyle(.secondary)
 
                     HStack {
-                        Text(t("Available server"))
+                        Text(t("Connection protocol"))
                         Spacer()
                         Text("WireGuard")
                             .foregroundStyle(.secondary)
@@ -106,7 +106,7 @@ struct VPNSettingsView: View {
                     }
 
                     NavigationLink {
-                        VPNSubscriptionView()
+                        VPNSubscriptionView(vpnManager: vpnManager)
                     } label: {
                         Label(
                             "Premium subscription",
@@ -114,11 +114,6 @@ struct VPNSettingsView: View {
                         )
                     }
 
-                    NavigationLink {
-                        VPNSubscriptionView()
-                    } label: {
-                        Label(t("Plans"), systemImage: "crown")
-                    }
                 }
 
                 Section("Network protection") {
