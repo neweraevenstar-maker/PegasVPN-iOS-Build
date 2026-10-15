@@ -103,6 +103,13 @@ struct VPNSubscriptionView: View {
                         .font(.footnote)
                 }
 
+                if let message = store.restoreMessage {
+                    Text(message)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
                 Button("Restore Purchases") {
                     Task { await store.restorePurchases() }
                 }
