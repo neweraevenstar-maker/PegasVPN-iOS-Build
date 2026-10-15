@@ -51,6 +51,10 @@ final class VPNSubscriptionStore: ObservableObject {
     }
 
     func purchase(_ product: Product) async {
+        guard VPNDisclosure.isAccepted else {
+            errorMessage = "Review VPN data disclosure before subscribing."
+            return
+        }
         isLoading = true
         defer { isLoading = false }
 
