@@ -4,6 +4,7 @@ import StoreKit
 struct VPNSubscriptionView: View {
     @StateObject private var store = VPNSubscriptionStore.shared
     @AppStorage(VPNDisclosure.acceptedKey) private var disclosureAccepted = false
+    @AppStorage("PegasVPN.accountMethod") private var accountMethod = "guest"
     @State private var showDisclosure = false
 
     var body: some View {
@@ -47,6 +48,19 @@ struct VPNSubscriptionView: View {
                         .font(.headline)
                 }
 
+                if accountMethod == "guest" {
+                    Label(
+                        "Before subscribing, sign in with Apple or email "
+                        + "in Settings > Account. This helps you recover "
+                        + "your purchase if you reinstall the app or "
+                        + "delete your account.",
+                        systemImage: "person.crop.circle.badge.checkmark"
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.orange)
+                    .multilineTextAlignment(.leading)
+                }
+
                 ForEach(store.products, id: \.id) { product in
                     Button {
                         if disclosureAccepted {
@@ -80,7 +94,10 @@ struct VPNSubscriptionView: View {
                         .background(.blue.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .disabled(store.isLoading || store.isSubscribed)
+                    .disabled(
+                        store.isLoading || store.isSubscribed
+                        || accountMethod == "guest"
+                    )
                 }
 
                 if store.products.isEmpty && !store.isLoading {
