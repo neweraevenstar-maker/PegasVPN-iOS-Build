@@ -110,4 +110,17 @@ enum VPNGuestAuth {
         try save(guest.access_token)
         return guest.access_token
     }
+
+    static func installSession(
+        accessToken: String, refreshToken: String
+    ) throws {
+        try VPNGuestRefresh.save(refreshToken)
+        try save(accessToken)
+    }
+
+    static func clearSession() {
+        SecItemDelete(query as CFDictionary)
+        VPNGuestRefresh.clear()
+    }
+
 }
