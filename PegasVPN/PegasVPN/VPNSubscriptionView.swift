@@ -104,8 +104,8 @@ struct VPNSubscriptionView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(.blue.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .background(PegasDesign.surface)
+                        .clipShape(RoundedRectangle(cornerRadius: 22))
                     }
                     .disabled(
                         store.isLoading || store.isSubscribed
@@ -158,6 +158,7 @@ struct VPNSubscriptionView: View {
             .padding(24)
         }
         .navigationTitle("Subscription")
+        .pegasPremiumScreen()
         .sheet(isPresented: $showDisclosure) {
             VPNDisclosureView()
         }

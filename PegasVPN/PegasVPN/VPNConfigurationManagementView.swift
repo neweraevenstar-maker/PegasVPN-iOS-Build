@@ -41,6 +41,7 @@ struct VPNConfigurationManagementView: View {
                 }
             }
             .navigationTitle("Manage configuration")
+            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }

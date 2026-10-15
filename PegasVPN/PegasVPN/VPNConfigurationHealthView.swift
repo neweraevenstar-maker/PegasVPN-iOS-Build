@@ -45,6 +45,7 @@ struct VPNConfigurationHealthView: View {
                 }
             }
             .navigationTitle("Configuration health")
+            .pegasPremiumScreen()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
