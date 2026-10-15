@@ -1,4 +1,5 @@
 import XCTest
+import CryptoKit
 @testable import PegasVPN
 
 final class VPNCoreTests: XCTestCase {
@@ -21,6 +22,22 @@ final class VPNCoreTests: XCTestCase {
         AllowedIPs = 0.0.0.0/0, ::/0
         Endpoint = vpn.example.com:51820
         """
+    }
+
+    func testWireGuardPrivateKeyStaysOnDeviceAndPublicKeyMatches() throws {
+        let first = try VPNWireGuardIdentity.loadOrCreate()
+        let second = try VPNWireGuardIdentity.loadOrCreate()
+        XCTAssertEqual(first.privateKey, second.privateKey)
+        XCTAssertEqual(first.publicKey, second.publicKey)
+        let raw = try XCTUnwrap(Data(base64Encoded: first.privateKey))
+        XCTAssertEqual(raw.count, 32)
+        let key = try Curve25519.KeyAgreement.PrivateKey(
+            rawRepresentation: raw
+        )
+        XCTAssertEqual(
+            key.publicKey.rawRepresentation.base64EncodedString(),
+            first.publicKey
+        )
     }
 
     func testValidWireGuardConfiguration() throws {
