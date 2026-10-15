@@ -108,6 +108,16 @@ struct VPNAccountView: View {
             }
 
             Section("Account management") {
+                if accountMethod == "guest" {
+                    Text(
+                        "Have an active Apple subscription? Sign in with Apple "
+                        + "or email before deleting your guest account. "
+                        + "Guest-only purchases may not be recoverable."
+                    )
+                    .font(.footnote)
+                    .foregroundStyle(.orange)
+                }
+
                 Button("Delete account", role: .destructive) {
                     confirmDeletion = true
                 }
