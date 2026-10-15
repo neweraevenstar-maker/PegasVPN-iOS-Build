@@ -12,6 +12,7 @@ final class VPNSubscriptionStore: ObservableObject {
 
     @Published private(set) var isLoading = false
     @Published var errorMessage: String?
+    @Published private(set) var restoreMessage: String?
 
     private let productIDs: Set<String> = [
         "com.pegasvpn.subscription.monthly",
@@ -100,12 +101,20 @@ final class VPNSubscriptionStore: ObservableObject {
 
     func restorePurchases() async {
         isLoading = true
+        errorMessage = nil
+        restoreMessage = nil
         defer { isLoading = false }
 
         do {
+            // Request Apple Account confirmation only for explicit Restore.
             try await AppStore.sync()
             await refreshStatus()
             await loadAccessStatus()
+            if errorMessage == nil {
+                restoreMessage = isSubscribed
+                    ? "Your active subscription has been restored."
+                    : "No active purchase found. Sign in to the PegasVPN account used for purchase and try again."
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
