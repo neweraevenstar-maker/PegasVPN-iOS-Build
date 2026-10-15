@@ -49,22 +49,32 @@ struct VPNSubscriptionView: View {
                     Button {
                         Task { await store.purchase(product) }
                     } label: {
-                        HStack {
-                            VStack(alignment: .leading) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
                                 Text(product.displayName)
                                     .font(.headline)
-                                Text(product.description)
-                                    .font(.caption)
+                                Spacer()
+                                Text(product.displayPrice)
+                                    .fontWeight(.semibold)
                             }
-                            Spacer()
-                            Text(product.displayPrice)
-                                .fontWeight(.semibold)
+
+                            Text("Billed every \(billingPeriod(product)). Auto-renews until cancelled.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            if let trial = freeTrialPeriod(product) {
+                                Text("\(trial) free for eligible new subscribers, then \(product.displayPrice) every \(billingPeriod(product)).")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundStyle(.primary)
+                            }
                         }
                         .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
                         .background(.blue.opacity(0.1))
                         .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
-                    .disabled(store.isLoading)
+                    .disabled(store.isLoading || store.isSubscribed)
                 }
 
                 if store.products.isEmpty && !store.isLoading {
@@ -90,8 +100,14 @@ struct VPNSubscriptionView: View {
                 Button("Restore Purchases") {
                     Task { await store.restorePurchases() }
                 }
+                .disabled(store.isLoading)
 
-                Text("Subscriptions renew automatically until cancelled. Manage or cancel in your Apple Account settings.")
+                Link(
+                    "Manage or cancel Apple subscriptions",
+                    destination: URL(string: "https://apps.apple.com/account/subscriptions")!
+                )
+
+                Text("Payment is charged to your Apple Account after any eligible free trial. Subscriptions renew automatically at the price and interval shown above unless cancelled at least 24 hours before renewal.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -103,5 +119,35 @@ struct VPNSubscriptionView: View {
             await store.loadProducts()
             await store.loadAccessStatus()
         }
+    }
+
+    private func billingPeriod(_ product: Product) -> String {
+        guard let period = product.subscription?.subscriptionPeriod else {
+            return "billing period"
+        }
+        return periodDescription(period)
+    }
+
+    private func freeTrialPeriod(_ product: Product) -> String? {
+        guard let offer = product.subscription?.introductoryOffer,
+              offer.paymentMode == .freeTrial else {
+            return nil
+        }
+        return periodDescription(offer.period)
+    }
+
+    private func periodDescription(
+        _ period: Product.SubscriptionPeriod
+    ) -> String {
+        let count = period.value
+        let unit: String
+        switch period.unit {
+        case .day: unit = count == 1 ? "day" : "days"
+        case .week: unit = count == 1 ? "week" : "weeks"
+        case .month: unit = count == 1 ? "month" : "months"
+        case .year: unit = count == 1 ? "year" : "years"
+        @unknown default: unit = "periods"
+        }
+        return "\(count) \(unit)"
     }
 }
