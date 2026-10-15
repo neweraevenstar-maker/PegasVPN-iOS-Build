@@ -251,10 +251,18 @@ final class VPNManager: ObservableObject {
                 try manager.connection.startVPNTunnel()
 
                 updateConnectionStatus()
+            } catch is CancellationError {
+                // STOP and account changes intentionally cancel setup.
+                // Do not surface cancellation as a connection failure.
+                if revision == connectionRevision {
+                    isConnecting = false
+                }
             } catch {
-                errorMessage = error.localizedDescription
-                isConnecting = false
-                updateConnectionStatus()
+                if revision == connectionRevision {
+                    errorMessage = error.localizedDescription
+                    isConnecting = false
+                    updateConnectionStatus()
+                }
             }
         }
     }
