@@ -112,8 +112,18 @@ enum VPNAccountAPI {
         _ = try await send("/auth/email/request", method: "POST", body: data)
     }
 
+    private static func validGuestToken() async -> String? {
+        guard method == "guest",
+              (try? await VPNGuestAuth.accessToken()) != nil else {
+            return nil
+        }
+        // Do not send a cached, potentially expired guest session
+        // when linking an Apple or email identity.
+        return try? await VPNGuestAuth.accessToken(refresh: true)
+    }
+
     static func signInEmail(email: String, code: String) async throws {
-        let guest = try? await VPNGuestAuth.accessToken()
+        let guest = await validGuestToken()
         let body = try JSONEncoder().encode([
             "email": email, "code": code
         ])
@@ -138,7 +148,7 @@ enum VPNAccountAPI {
               !token.isEmpty else {
             throw VPNAccountError.invalidIdentity
         }
-        let guest = try? await VPNGuestAuth.accessToken()
+        let guest = await validGuestToken()
         let body = try JSONEncoder().encode([
             "identity_token": token, "nonce": nonce
         ])
@@ -150,9 +160,16 @@ enum VPNAccountAPI {
 
     static func deleteAccount() async throws {
         let token = try await VPNGuestAuth.accessToken()
-        _ = try await send(
-            "/auth/account", method: "DELETE", token: token
-        )
+        do {
+            _ = try await send(
+                "/auth/account", method: "DELETE", token: token
+            )
+        } catch VPNAccountError.server(401) {
+            let renewed = try await VPNGuestAuth.accessToken(refresh: true)
+            _ = try await send(
+                "/auth/account", method: "DELETE", token: renewed
+            )
+        }
         VPNGuestAuth.clearSession()
         UserDefaults.standard.removeObject(forKey: methodKey)
         UserDefaults.standard.set(false, forKey: "PegasVPN.autoConnect")
