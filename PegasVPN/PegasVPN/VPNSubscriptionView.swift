@@ -20,18 +20,18 @@ struct VPNSubscriptionView: View {
                 if let access = store.accessStatus {
                     if access.trial_active {
                         Label(
-                            "7-day free trial active",
+                            "Trial VPN access active",
                             systemImage: "calendar.badge.clock"
                         )
                         .foregroundStyle(.green)
 
                         if let end = access.trial_ends_at {
-                            Text("Free access until: \(String(end.prefix(10)))")
+                            Text("Trial access until: \(String(end.prefix(10)))")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                         }
                     } else if !access.subscription_active {
-                        Text("Free trial ended. Choose a subscription.")
+                        Text("Trial access ended. Choose a subscription.")
                             .foregroundStyle(.orange)
                     }
                 }
@@ -68,8 +68,13 @@ struct VPNSubscriptionView: View {
                 }
 
                 if store.products.isEmpty && !store.isLoading {
-                    Text("Subscriptions will be available soon")
+                    Text("Subscriptions are currently unavailable. Please try again later.")
                         .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Button("Retry loading subscriptions") {
+                        Task { await store.loadProducts() }
+                    }
                 }
 
                 if store.isLoading {
