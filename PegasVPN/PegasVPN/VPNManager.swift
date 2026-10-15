@@ -312,8 +312,10 @@ final class VPNManager: ObservableObject {
         }
 
         wireGuardConfiguration = nil
-        if !VPNConfigurationStore.delete() {
-            errorMessage = "Could not clear the previous VPN configuration."
+        let configDeleted = VPNConfigurationStore.delete()
+        let keyDeleted = VPNWireGuardIdentity.delete()
+        if !configDeleted || !keyDeleted {
+            errorMessage = "Could not clear the previous VPN credentials."
         }
         updateConnectionStatus()
     }
