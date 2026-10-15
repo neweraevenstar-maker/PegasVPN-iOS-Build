@@ -377,7 +377,7 @@ struct ContentView: View {
         }
         .sheet(isPresented: $vpnManager.showSubscription) {
             NavigationStack {
-                VPNSubscriptionView()
+                VPNSubscriptionView(vpnManager: vpnManager)
             }
         }
         .sheet(isPresented: $showDisclosure) {
