@@ -38,7 +38,8 @@ final class VPNRemoteCatalogClient {
 
     func fetch(from endpoint: URL) async throws -> [VPNRemoteServer] {
         guard endpoint.scheme?.lowercased() == "https",
-              endpoint.host != nil,
+              endpoint.host?.lowercased() == "api.vimvitae.net",
+              endpoint.path == "/vpn/locations",
               endpoint.user == nil,
               endpoint.password == nil,
               endpoint.query == nil,
