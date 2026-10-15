@@ -239,6 +239,13 @@ final class VPNManager: ObservableObject {
         }
     }
 
+    func resetAfterAccountDeletion() {
+        disconnect()
+        wireGuardConfiguration = nil
+        _ = VPNConfigurationStore.delete()
+        errorMessage = nil
+    }
+
     func prepareForAutoConnect() async {
         await loadConfiguration()
     }
