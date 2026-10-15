@@ -70,7 +70,7 @@ struct VPNSettingsView: View {
                         .foregroundStyle(.secondary)
 
                     HStack {
-                        Text(t("VPN location"))
+                        Text(t("Default VPN location"))
                         Spacer()
                         Text("Germany")
                             .foregroundStyle(.secondary)
