@@ -13,6 +13,8 @@ final class VPNManager: ObservableObject {
     private var manager = NETunnelProviderManager()
     private var wireGuardConfiguration: String?
     private var activationTask: Task<Void, Never>?
+    private var connectionTask: Task<Void, Never>?
+    private var connectionRevision: UInt64 = 0
     private var isRevalidatingAccess = false
 
     init() {
@@ -202,8 +204,11 @@ final class VPNManager: ObservableObject {
         isConnecting = true
         errorMessage = nil
 
-        Task {
+        connectionRevision &+= 1
+        let revision = connectionRevision
+        connectionTask = Task {
             do {
+                try Task.checkCancellation()
                 let tunnelProtocol = NETunnelProviderProtocol()
                 tunnelProtocol.providerBundleIdentifier = providerBundleID
                 tunnelProtocol.serverAddress = "PegasVPN"
@@ -235,8 +240,14 @@ final class VPNManager: ObservableObject {
                     manager.isOnDemandEnabled = false
                 }
 
+                try Task.checkCancellation()
+                guard revision == connectionRevision else { return }
                 try await manager.saveToPreferences()
+                try Task.checkCancellation()
+                guard revision == connectionRevision else { return }
                 try await manager.loadFromPreferences()
+                try Task.checkCancellation()
+                guard revision == connectionRevision else { return }
                 try manager.connection.startVPNTunnel()
 
                 updateConnectionStatus()
@@ -252,6 +263,12 @@ final class VPNManager: ObservableObject {
     func resetAfterAccountChange() async {
         activationTask?.cancel()
         activationTask = nil
+        connectionRevision &+= 1
+        connectionTask?.cancel()
+        // Wait for an in-flight save/load before removing the old
+        // account's VPN profile. It must never reconnect afterward.
+        await connectionTask?.value
+        connectionTask = nil
         manager.isOnDemandEnabled = false
         manager.connection.stopVPNTunnel()
 
@@ -316,6 +333,9 @@ final class VPNManager: ObservableObject {
     func disconnect() {
         activationTask?.cancel()
         activationTask = nil
+        connectionRevision &+= 1
+        connectionTask?.cancel()
+        connectionTask = nil
         isConnecting = false
         manager.isOnDemandEnabled = false
         manager.connection.stopVPNTunnel()
