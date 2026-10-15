@@ -48,7 +48,15 @@ enum VPNGuestAuth {
         guard let data = token.data(using: .utf8) else {
             throw VPNGuestAuthError.invalidResponse
         }
-        SecItemDelete(query as CFDictionary)
+        let update = [kSecValueData as String: data]
+        let status = SecItemUpdate(
+            query as CFDictionary, update as CFDictionary
+        )
+        if status == errSecSuccess { return }
+        guard status == errSecItemNotFound else {
+            throw VPNGuestAuthError.keychain
+        }
+
         var item = query
         item[kSecValueData as String] = data
         item[kSecAttrAccessible as String] =
@@ -114,8 +122,18 @@ enum VPNGuestAuth {
     static func installSession(
         accessToken: String, refreshToken: String
     ) throws {
+        let previousRefresh = VPNGuestRefresh.load()
         try VPNGuestRefresh.save(refreshToken)
-        try save(accessToken)
+        do {
+            try save(accessToken)
+        } catch {
+            if let previousRefresh {
+                try? VPNGuestRefresh.save(previousRefresh)
+            } else {
+                VPNGuestRefresh.clear()
+            }
+            throw error
+        }
     }
 
     static func clearSession() {
