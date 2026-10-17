@@ -70,8 +70,7 @@ struct VPNDiagnosticsView: View {
 
                 if let errorMessage, !errorMessage.isEmpty {
                     Section(localized("Last error")) {
-                        Text(errorMessage)
-                            .foregroundStyle(.red)
+                        PegasStatusNotice(message: errorMessage)
                     }
                 }
 
@@ -87,6 +86,7 @@ struct VPNDiagnosticsView: View {
             }
             .navigationTitle(localized("Diagnostics"))
             .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
