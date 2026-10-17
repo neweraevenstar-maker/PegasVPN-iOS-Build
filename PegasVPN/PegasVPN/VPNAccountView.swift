@@ -67,6 +67,11 @@ struct VPNAccountView: View {
                                     return
                                 }
                                 let submittedNonce = nonce
+                                nonce = ""
+                                guard !submittedNonce.isEmpty else {
+                                    errorMessage = "Apple sign-in session expired. Try again."
+                                    return
+                                }
                                 Task { @MainActor in
                                     await perform {
                                         try await VPNAccountAPI.signInApple(
@@ -77,6 +82,7 @@ struct VPNAccountView: View {
                                     }
                                 }
                             case .failure(let error):
+                                nonce = ""
                                 if (error as? ASAuthorizationError)?.code != .canceled {
                                     errorMessage = error.localizedDescription
                                 }
@@ -211,8 +217,10 @@ struct VPNAccountView: View {
         await vpnManager.resetAfterAccountChange()
         // Reconcile StoreKit entitlements silently for the signed-in
         // account; AppStore.sync() is reserved for explicit Restore.
-        await VPNSubscriptionStore.shared.refreshStatus()
-        await VPNSubscriptionStore.shared.loadAccessStatus()
+        code = ""
+        codeSent = false
+        requestedEmail = ""
+        await VPNSubscriptionStore.shared.reconcileSubscriptionChange()
     }
 
     @MainActor
