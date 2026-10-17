@@ -29,6 +29,7 @@ final class VPNSubscriptionStore: ObservableObject {
                         try await VPNBillingClient.verify(result)
                         await transaction.finish()
                         await self?.refreshStatus()
+                        await self?.loadAccessStatus()
                     } catch {
                         self?.errorMessage = error.localizedDescription
                     }
@@ -147,4 +148,13 @@ final class VPNSubscriptionStore: ObservableObject {
 
         isSubscribed = active
     }
+
+    /// Refresh after a StoreKit renewal, refund, or subscription change.
+    /// Only the server entitlement controls VPN access; local Apple state
+    /// is presentation data and must not grant a tunnel on its own.
+    func reconcileSubscriptionChange() async {
+        await refreshStatus()
+        await loadAccessStatus()
+    }
 }
+

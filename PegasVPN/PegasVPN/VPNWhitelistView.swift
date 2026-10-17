@@ -57,6 +57,7 @@ struct VPNWhitelistView: View {
         }
         .navigationTitle("Исключения IPv4")
             .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
         .alert("Неверный адрес", isPresented: $showInvalid) {
             Button("OK", role: .cancel) {}
         } message: {

@@ -8,11 +8,27 @@ struct VPNAccountView: View {
     @State private var email = ""
     @State private var code = ""
     @State private var codeSent = false
+    @State private var requestedEmail = ""
     @State private var isBusy = false
     @State private var errorMessage: String?
     @State private var nonce = ""
     @State private var confirmDeletion = false
     @State private var deleted = false
+
+    private var normalizedEmail: String {
+        email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
+    private var validEmail: Bool {
+        let parts = normalizedEmail.split(separator: "@", omittingEmptySubsequences: false)
+        return parts.count == 2 && !parts[0].isEmpty
+            && parts[1].contains(".") && !normalizedEmail.contains(" ")
+            && normalizedEmail.count <= 254
+    }
+
+    private var validCode: Bool {
+        code.count == 6 && code.allSatisfy { $0.isNumber && $0.isASCII }
+    }
 
     var body: some View {
         Form {
@@ -51,6 +67,11 @@ struct VPNAccountView: View {
                                     return
                                 }
                                 let submittedNonce = nonce
+                                nonce = ""
+                                guard !submittedNonce.isEmpty else {
+                                    errorMessage = "Apple sign-in session expired. Try again."
+                                    return
+                                }
                                 Task { @MainActor in
                                     await perform {
                                         try await VPNAccountAPI.signInApple(
@@ -61,7 +82,10 @@ struct VPNAccountView: View {
                                     }
                                 }
                             case .failure(let error):
-                                errorMessage = error.localizedDescription
+                                nonce = ""
+                                if (error as? ASAuthorizationError)?.code != .canceled {
+                                    errorMessage = error.localizedDescription
+                                }
                             }
                         }
                     )
@@ -75,35 +99,45 @@ struct VPNAccountView: View {
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
                         .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
+.autocorrectionDisabled()
+                        .onChange(of: email) { _, _ in
+                            codeSent = false
+                            requestedEmail = ""
+                            code = ""
+                        }
 
                     if codeSent {
                         TextField("Six-digit code", text: $code)
                             .keyboardType(.numberPad)
                             .textContentType(.oneTimeCode)
+                            .onChange(of: code) { _, newValue in
+                                code = String(newValue.filter { $0.isASCII && $0.isNumber }.prefix(6))
+                            }
 
                         Button("Verify and sign in") {
                             Task {
                                 await perform {
                                     try await VPNAccountAPI.signInEmail(
-                                        email: email, code: code
+                                        email: requestedEmail, code: code
                                     )
                                     await completeSignIn()
                                 }
                             }
                         }
-                        .disabled(isBusy || code.count != 6)
+                        .disabled(isBusy || !validCode || requestedEmail != normalizedEmail)
                     }
 
                     Button(codeSent ? "Resend code" : "Email me a code") {
                         Task {
                             await perform {
-                                try await VPNAccountAPI.requestEmailCode(email)
+                                try await VPNAccountAPI.requestEmailCode(normalizedEmail)
+                                requestedEmail = normalizedEmail
+                                code = ""
                                 codeSent = true
                             }
                         }
                     }
-                    .disabled(isBusy || !email.contains("@"))
+                    .disabled(isBusy || !validEmail)
                 }
             }
 
@@ -139,9 +173,7 @@ struct VPNAccountView: View {
             }
             if let errorMessage {
                 Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+                    PegasStatusNotice(message: errorMessage)
                 }
             }
             if deleted {
@@ -153,6 +185,7 @@ struct VPNAccountView: View {
         }
         .navigationTitle("Account")
         .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
         .confirmationDialog(
             "Permanently delete your PegasVPN account?",
             isPresented: $confirmDeletion,
@@ -164,6 +197,10 @@ struct VPNAccountView: View {
                         try await VPNAccountAPI.deleteAccount()
                         await vpnManager.resetAfterAccountDeletion()
                         deleted = true
+                        codeSent = false
+                        requestedEmail = ""
+                        code = ""
+                        await VPNSubscriptionStore.shared.loadAccessStatus()
                     }
                 }
             }
@@ -180,8 +217,10 @@ struct VPNAccountView: View {
         await vpnManager.resetAfterAccountChange()
         // Reconcile StoreKit entitlements silently for the signed-in
         // account; AppStore.sync() is reserved for explicit Restore.
-        await VPNSubscriptionStore.shared.refreshStatus()
-        await VPNSubscriptionStore.shared.loadAccessStatus()
+        code = ""
+        codeSent = false
+        requestedEmail = ""
+        await VPNSubscriptionStore.shared.reconcileSubscriptionChange()
     }
 
     @MainActor

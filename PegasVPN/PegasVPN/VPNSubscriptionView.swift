@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import UIKit
 
 struct VPNSubscriptionView: View {
     var vpnManager: VPNManager? = nil
@@ -12,8 +13,12 @@ struct VPNSubscriptionView: View {
         ScrollView {
             VStack(spacing: 22) {
                 Image(systemName: "shield.lefthalf.filled")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 54, weight: .light))
+                    .foregroundStyle(PegasDesign.metallic)
+                    .frame(width: 108, height: 108)
+                    .background(Circle().fill(PegasDesign.surface))
+                    .overlay(Circle().strokeBorder(PegasDesign.silver.opacity(0.35)))
+                    .shadow(color: PegasDesign.electric.opacity(0.22), radius: 24)
 
                 Text("PegasVPN Premium")
                     .font(.largeTitle.bold())
@@ -47,6 +52,14 @@ struct VPNSubscriptionView: View {
                 } else {
                     Text("Choose your subscription")
                         .font(.headline)
+                }
+
+                if let access = store.accessStatus,
+                   access.subscription_active,
+                   let expiry = access.subscription_ends_at {
+                    Text("Current paid access until: \\(String(expiry.prefix(10)))")
+                        .font(.footnote)
+                        .foregroundStyle(PegasDesign.silver)
                 }
 
                 if accountMethod == "guest" {
@@ -104,8 +117,14 @@ struct VPNSubscriptionView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(PegasDesign.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 22))
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(PegasDesign.surface)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                        .strokeBorder(PegasDesign.silver.opacity(0.35))
+                                }
+                        )
                     }
                     .disabled(
                         store.isLoading || store.isSubscribed
@@ -128,9 +147,7 @@ struct VPNSubscriptionView: View {
                 }
 
                 if let error = store.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+                    PegasStatusNotice(message: error)
                 }
 
                 if let message = store.restoreMessage {
@@ -159,12 +176,16 @@ struct VPNSubscriptionView: View {
         }
         .navigationTitle("Subscription")
         .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
         .sheet(isPresented: $showDisclosure) {
             VPNDisclosureView()
         }
         .task {
             await store.loadProducts()
             await store.loadAccessStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            Task { await store.reconcileSubscriptionChange() }
         }
     }
 
