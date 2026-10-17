@@ -73,6 +73,7 @@ struct VPNControlCenterView: View {
             }
             .navigationTitle("Control center")
             .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
@@ -132,5 +133,7 @@ private struct VPNServerListView: View {
             }
         }
         .navigationTitle("Server locations")
+        .pegasPremiumScreen()
+        .scrollContentBackground(.hidden)
     }
 }
