@@ -48,8 +48,7 @@ struct VPNAdvancedDiagnosticsView: View {
 
                 if let errorMessage, !errorMessage.isEmpty {
                     Section("Connection error") {
-                        Text(errorMessage)
-                            .foregroundStyle(.red)
+                        PegasStatusNotice(message: errorMessage)
                     }
                 }
 
@@ -92,6 +91,7 @@ struct VPNAdvancedDiagnosticsView: View {
             }
             .navigationTitle("Advanced diagnostics")
             .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
