@@ -139,9 +139,7 @@ struct VPNAccountView: View {
             }
             if let errorMessage {
                 Section {
-                    Text(errorMessage)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+                    PegasStatusNotice(message: errorMessage)
                 }
             }
             if deleted {
@@ -153,6 +151,7 @@ struct VPNAccountView: View {
         }
         .navigationTitle("Account")
         .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
         .scrollContentBackground(.hidden)
         .confirmationDialog(
             "Permanently delete your PegasVPN account?",
