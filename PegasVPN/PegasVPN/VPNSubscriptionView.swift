@@ -12,8 +12,12 @@ struct VPNSubscriptionView: View {
         ScrollView {
             VStack(spacing: 22) {
                 Image(systemName: "shield.lefthalf.filled")
-                    .font(.system(size: 64))
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 54, weight: .light))
+                    .foregroundStyle(PegasDesign.metallic)
+                    .frame(width: 108, height: 108)
+                    .background(Circle().fill(PegasDesign.surface))
+                    .overlay(Circle().strokeBorder(PegasDesign.silver.opacity(0.35)))
+                    .shadow(color: PegasDesign.electric.opacity(0.22), radius: 24)
 
                 Text("PegasVPN Premium")
                     .font(.largeTitle.bold())
@@ -104,8 +108,14 @@ struct VPNSubscriptionView: View {
                         }
                         .padding()
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(PegasDesign.surface)
-                        .clipShape(RoundedRectangle(cornerRadius: 22))
+                        .background(
+                            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                .fill(PegasDesign.surface)
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                                        .strokeBorder(PegasDesign.silver.opacity(0.35))
+                                }
+                        )
                     }
                     .disabled(
                         store.isLoading || store.isSubscribed
