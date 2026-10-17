@@ -1,5 +1,6 @@
 import SwiftUI
 import StoreKit
+import UIKit
 
 struct VPNSubscriptionView: View {
     var vpnManager: VPNManager? = nil
@@ -51,6 +52,14 @@ struct VPNSubscriptionView: View {
                 } else {
                     Text("Choose your subscription")
                         .font(.headline)
+                }
+
+                if let access = store.accessStatus,
+                   access.subscription_active,
+                   let expiry = access.subscription_ends_at {
+                    Text("Current paid access until: \\(String(expiry.prefix(10)))")
+                        .font(.footnote)
+                        .foregroundStyle(PegasDesign.silver)
                 }
 
                 if accountMethod == "guest" {
@@ -174,6 +183,9 @@ struct VPNSubscriptionView: View {
         .task {
             await store.loadProducts()
             await store.loadAccessStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            Task { await store.reconcileSubscriptionChange() }
         }
     }
 
