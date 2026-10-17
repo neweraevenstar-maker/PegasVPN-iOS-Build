@@ -56,6 +56,7 @@ struct VPNAdvancedSettingsView: View {
             }
             .navigationTitle("Advanced settings")
             .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
