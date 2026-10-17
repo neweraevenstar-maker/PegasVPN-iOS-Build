@@ -20,8 +20,9 @@ struct VPNDisclosureView: View {
                 VStack(alignment: .leading, spacing: 22) {
                     Image(systemName: "network.badge.shield.half.filled")
                         .font(.system(size: 54))
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(PegasDesign.metallic)
                         .frame(maxWidth: .infinity)
+                        .shadow(color: PegasDesign.electric.opacity(0.35), radius: 18)
 
                     Text("Before using PegasVPN")
                         .font(.title.bold())
@@ -98,5 +99,6 @@ struct VPNDisclosureView: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .pegasPremiumCard()
     }
 }
