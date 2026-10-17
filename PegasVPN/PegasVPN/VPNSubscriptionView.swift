@@ -138,9 +138,7 @@ struct VPNSubscriptionView: View {
                 }
 
                 if let error = store.errorMessage {
-                    Text(error)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
+                    PegasStatusNotice(message: error)
                 }
 
                 if let message = store.restoreMessage {
@@ -169,6 +167,7 @@ struct VPNSubscriptionView: View {
         }
         .navigationTitle("Subscription")
         .pegasPremiumScreen()
+            .scrollContentBackground(.hidden)
         .sheet(isPresented: $showDisclosure) {
             VPNDisclosureView()
         }
