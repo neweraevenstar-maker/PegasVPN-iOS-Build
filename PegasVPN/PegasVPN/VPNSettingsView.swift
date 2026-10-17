@@ -161,6 +161,7 @@ struct VPNSettingsView: View {
             .navigationTitle(t("Settings"))
             .pegasPremiumScreen()
             .scrollContentBackground(.hidden)
+            .scrollContentBackground(.hidden)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(t("Done")) { dismiss() }
