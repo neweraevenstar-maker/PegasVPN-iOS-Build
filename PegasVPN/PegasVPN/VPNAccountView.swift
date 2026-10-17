@@ -86,19 +86,19 @@ struct VPNAccountView: View {
                             Task {
                                 await perform {
                                     try await VPNAccountAPI.signInEmail(
-                                        email: email, code: code
+                                        email: email, code: code.trimmingCharacters(in: .whitespacesAndNewlines)
                                     )
                                     await completeSignIn()
                                 }
                             }
                         }
-                        .disabled(isBusy || code.count != 6)
+                        .disabled(isBusy || code.trimmingCharacters(in: .whitespacesAndNewlines).count != 6)
                     }
 
                     Button(codeSent ? "Resend code" : "Email me a code") {
                         Task {
                             await perform {
-                                try await VPNAccountAPI.requestEmailCode(email)
+                                try await VPNAccountAPI.requestEmailCode(email.trimmingCharacters(in: .whitespacesAndNewlines))
                                 codeSent = true
                             }
                         }
@@ -153,6 +153,7 @@ struct VPNAccountView: View {
         }
         .navigationTitle("Account")
         .pegasPremiumScreen()
+        .scrollContentBackground(.hidden)
         .confirmationDialog(
             "Permanently delete your PegasVPN account?",
             isPresented: $confirmDeletion,
